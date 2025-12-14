@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mint.caizhitong.mapper.MaterialItemMapper">
+    <select id="selectPageQuery" resultType="com.mint.caizhitong.domain.MaterialListDTO">
+        SELECT
+        ti.id,
+        ti.code,
+        ti.name,
+        ti.category_id,
+        ti.brand,
+        ti.model,
+        ti.spec,
+        ti.currency,
+        ti.unit_price,
+        tc.unit,
+        tc.safe_stock,
+        -- 聚合计算总库存：SUM(stock_batch.quantity)
+        IFNULL(SUM(tsb.quantity), 0) AS totalStock
+        FROM material_item ti
+        -- 联表 material_category 获取单位和安全库存
+        LEFT JOIN material_category tc ON ti.category_id = tc.id
+        -- 联表 stock_batch 计算总库存。使用 LEFT JOIN，即使没有库存记录，物料也会显示，库存为 0
+        LEFT JOIN stock_batch tsb ON ti.id = tsb.item_id
+
+        <where>
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (ti.name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR ti.code LIKE CONCAT('%', #{req.keyword}, '%')
+                OR ti.brand LIKE CONCAT('%', #{req.keyword}, '%')
+                OR ti.model LIKE CONCAT('%', #{req.keyword}, '%'))
+            </if>
+
+            <if test="req.categoryId != null">
+                AND ti.category_id = #{req.categoryId}
+            </if>
+
+            <if test="req.warnOnly == true">
+                -- 必须有安全库存设置，且总库存低于安全库存
+                AND tc.safe_stock IS NOT NULL
+                HAVING IFNULL(SUM(tsb.quantity), 0) <![CDATA[<]]> tc.safe_stock
+                -- 注意：HAVING 条件需要在 GROUP BY 之后执行，所以放在 WHERE 块内，但实际生效在 GROUP BY 之后
+            </if>
+        </where>
+
+        -- 必须按物料ID分组才能使用 SUM 聚合
+        GROUP BY ti.id
+
+        ORDER BY ti.create_time DESC
+    </select>
+</mapper>
