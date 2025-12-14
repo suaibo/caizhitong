@@ -1,4 +1,4 @@
-package com.mint.caizhitong.domain.StockRequest;
+package com.mint.caizhitong.domain.stockrequest;
 
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;

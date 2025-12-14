@@ -1,16 +1,13 @@
 package com.mint.caizhitong.controller;
 
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.mint.caizhitong.common.resp.PageVo;
 import com.mint.caizhitong.common.resp.Result;
 import com.mint.caizhitong.domain.*;
-import com.mint.caizhitong.domain.MaterialRequest.MaterialCreateRequest;
-import com.mint.caizhitong.domain.MaterialRequest.MaterialUpdateRequest;
-import com.mint.caizhitong.model.MaterialCategory;
+import com.mint.caizhitong.domain.materialrequest.MaterialCreateRequest;
+import com.mint.caizhitong.domain.materialrequest.MaterialUpdateRequest;
 import com.mint.caizhitong.service.IMaterialCategoryService;
 import com.mint.caizhitong.service.IMaterialItemService;
-import com.mint.caizhitong.service.impl.MaterialItemServiceImpl;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

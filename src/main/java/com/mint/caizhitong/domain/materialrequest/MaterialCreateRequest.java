@@ -1,4 +1,4 @@
-package com.mint.caizhitong.domain.MaterialRequest;
+package com.mint.caizhitong.domain.materialrequest;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

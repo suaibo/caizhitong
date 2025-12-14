@@ -3,6 +3,7 @@ package com.mint.caizhitong.controller;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mint.caizhitong.common.constant.RoleConst;
 import com.mint.caizhitong.common.resp.Result;
 import com.mint.caizhitong.common.utils.PasswordUtils;
 import com.mint.caizhitong.domain.UserDto;
@@ -21,7 +22,7 @@ import java.util.List;
  * @author mint
  * @since 2025-11-25
  */
-@SaCheckRole("admin")
+@SaCheckRole(RoleConst.ADMIN) //权限控制
 @RestController
 @RequestMapping("/api/users")
 public class UsersController {
