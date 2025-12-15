@@ -43,4 +43,11 @@ public class GlobalExceptionHandler {
         return Result.error40001(e.getMessage());
     }
 
+    @ExceptionHandler(cn.dev33.satoken.exception.SaTokenException.class)
+    @ResponseBody
+    public Result handleSaTokenException(cn.dev33.satoken.exception.SaTokenException e) {
+        // 分类处理，比如未登录返回 401
+        return Result.error40003(e.getMessage());
+    }
+
 }

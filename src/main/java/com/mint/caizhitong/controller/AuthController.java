@@ -43,7 +43,7 @@ public class AuthController {
     @PostMapping("/login")
     public Result login(String username, String password) {
         SysUser one = userService.getOne(Wrappers.<SysUser>lambdaQuery().eq(SysUser::getName, username));
-        if (one != null && PasswordUtils.encodePassword(password).equals(one.getPassword())) {
+        if (one != null && PasswordUtils.matchesPassword(password, one.getPassword())) {
             StpUtil.login(one.getId());
             UserVO userVO = new UserVO();
             Map<String, Object> stringObjectMap = new HashMap<>();

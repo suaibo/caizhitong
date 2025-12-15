@@ -2,6 +2,7 @@ package com.mint.caizhitong.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mint.caizhitong.common.exception.BusinessConflictException;
 import com.mint.caizhitong.common.exception.ResourceNotFoundException;
@@ -10,10 +11,14 @@ import com.mint.caizhitong.domain.MaterialItemQueryDTO;
 import com.mint.caizhitong.domain.MaterialListDTO;
 import com.mint.caizhitong.domain.materialrequest.MaterialCreateRequest;
 import com.mint.caizhitong.domain.materialrequest.MaterialUpdateRequest;
+import com.mint.caizhitong.domain.stockvo.StockBatchVO;
+import com.mint.caizhitong.domain.vo.MaterialDetailVO;
 import com.mint.caizhitong.mapper.MaterialCategoryMapper;
 import com.mint.caizhitong.mapper.StockBatchMapper;
+import com.mint.caizhitong.model.MaterialCategory;
 import com.mint.caizhitong.model.MaterialItem;
 import com.mint.caizhitong.mapper.MaterialItemMapper;
+import com.mint.caizhitong.model.StockBatch;
 import com.mint.caizhitong.service.IMaterialItemService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -147,5 +154,57 @@ public class MaterialItemServiceImpl extends ServiceImpl<MaterialItemMapper, Mat
         // 如果存在批次记录但 quantity SUM = 0，则可以删除。
         // 由于 stock_batch 对 item_id 设置了 ON DELETE CASCADE，删除 item 也会删除 stock_batch 记录。
         this.removeById(id);
+    }
+
+    @Override
+    public MaterialDetailVO getMaterialDetail(Long id) {
+        // 1. 查询材料基础信息
+        MaterialItem item = baseMapper.selectById(id);
+        if (item == null) {
+            throw new ResourceNotFoundException("物料ID [" + id + "] 不存在。");
+        }
+
+        // 2. 查询所属类目信息 (获取单位、安全库存、类目名称)
+        MaterialCategory category = categoryMapper.selectById(item.getCategoryId());
+
+        // 3. 查询该材料下的所有库存批次 (按过期时间排序)
+        List<StockBatch> batches = stockBatchMapper.selectList(
+                Wrappers.<StockBatch>lambdaQuery()
+                        .eq(StockBatch::getItemId, id)
+                        .gt(StockBatch::getQuantity, BigDecimal.ZERO) // 仅展示有库存的批次，根据需求调整
+                        .orderByAsc(StockBatch::getExpireDate)
+        );
+
+        // 4. 计算总库存
+        BigDecimal totalStock = batches.stream()
+                .map(StockBatch::getQuantity)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 5. 组装 VO
+        MaterialDetailVO vo = new MaterialDetailVO();
+
+        // 5.1 复制材料属性
+        BeanUtils.copyProperties(item, vo);
+
+        // 5.2 填充类目属性
+        if (category != null) {
+            vo.setCategoryName(category.getName());
+            vo.setUnit(category.getUnit());
+            vo.setSafeStock(category.getSafeStock());
+        }
+
+        // 5.3 填充库存统计
+        vo.setTotalStock(totalStock);
+
+        // 5.4 转换并填充批次列表
+        List<StockBatchVO> batchVOs = batches.stream().map(batch -> {
+            StockBatchVO batchVO = new StockBatchVO();
+            BeanUtils.copyProperties(batch, batchVO);
+            return batchVO;
+        }).collect(Collectors.toList());
+
+        vo.setBatches(batchVOs);
+
+        return vo;
     }
 }

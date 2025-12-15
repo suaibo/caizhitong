@@ -6,6 +6,7 @@ import com.mint.caizhitong.common.resp.Result;
 import com.mint.caizhitong.domain.*;
 import com.mint.caizhitong.domain.materialrequest.MaterialCreateRequest;
 import com.mint.caizhitong.domain.materialrequest.MaterialUpdateRequest;
+import com.mint.caizhitong.domain.vo.MaterialDetailVO;
 import com.mint.caizhitong.service.IMaterialCategoryService;
 import com.mint.caizhitong.service.IMaterialItemService;
 import org.springframework.validation.annotation.Validated;
@@ -88,7 +89,8 @@ public class MaterialController {
     }
 
     @GetMapping("/{id}")
-    public Result getMaterial(@PathVariable Long id) {
-        return Result.error("功能尚未完成");
+    public Result<MaterialDetailVO> getMaterial(@PathVariable Long id) {
+        MaterialDetailVO vo = materialItemService.getMaterialDetail(id);
+        return Result.success(vo);
     }
 }

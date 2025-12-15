@@ -5,6 +5,7 @@ import com.mint.caizhitong.domain.MaterialItemQueryDTO;
 import com.mint.caizhitong.domain.MaterialListDTO;
 import com.mint.caizhitong.domain.materialrequest.MaterialCreateRequest;
 import com.mint.caizhitong.domain.materialrequest.MaterialUpdateRequest;
+import com.mint.caizhitong.domain.vo.MaterialDetailVO;
 import com.mint.caizhitong.model.MaterialItem;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,4 +31,6 @@ public interface IMaterialItemService extends IService<MaterialItem> {
 
     @Transactional
     void removeMaterial(Long id);
+
+    MaterialDetailVO getMaterialDetail(Long id);
 }
